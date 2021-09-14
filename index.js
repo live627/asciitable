@@ -1,11 +1,11 @@
-var asciitable = function asciitable(options, data) {
-  var pad = function pad(text, length) {
+const asciitable = function asciitable(options, data) {
+  const pad = function pad(text, length) {
     if (typeof text === "undefined") { text = ""; }
-    return ("" + text) + new Array(Math.max((length - ("" + text).length) + 1,0)).join(" ");
+    return `${text}${new Array(Math.max((length - (`${text}`).length) + 1,0)).join(" ")}`;
   };
 
   if (typeof options === "object" && Array.isArray(options)) {
-    var tmp = data;
+    const tmp = data;
     data = options;
     options = tmp;
   }
@@ -18,17 +18,17 @@ var asciitable = function asciitable(options, data) {
     options.intersectionCharacter = "-";
   }
 
-  var columns;
+  let columns;
   if (options.columns) {
     columns = options.columns;
   } else {
     columns = [];
-    data.forEach(function(e) {
-      Object.keys(e).filter(function(k) { return columns.indexOf(k) === -1; }).forEach(function(k) { columns.push(k); });
+    data.forEach(e => {
+      Object.keys(e).filter(k => !columns.includes(k)).forEach(k => { columns.push(k); });
     });
   }
 
-  columns = columns.map(function(e) {
+  columns = columns.map(e => {
     if (typeof e === "string") {
       e = {
         name: e,
@@ -41,32 +41,30 @@ var asciitable = function asciitable(options, data) {
     return e;
   });
 
-  data.forEach(function(e) {
-    columns.forEach(function(column) {
+  data.forEach(e => {
+    columns.forEach(column => {
       if (typeof e[column.field] === "undefined") {
         return;
       }
 
-      column.width = Math.max(column.width, ("" + e[column.field]).length);
+      column.width = Math.max(column.width, (`${e[column.field]}`).length);
     });
   });
 
-  var output = [];
+  let output = [];
 
-  var separator = [""].concat(columns.map(function(e) { return (new Array(e.width + 1)).join("-"); })).concat([""]).join("-" + options.intersectionCharacter + "-");
+  const separator = [""].concat(columns.map(({width}) => (new Array(width + 1)).join("-"))).concat([""]).join(`-${options.intersectionCharacter}-`);
 
   output.push(separator);
-  output.push([""].concat(columns.map(function(e) { return pad(e.name, e.width); })).concat([""]).join(" | "));
+  output.push([""].concat(columns.map(({name, width}) => pad(name, width))).concat([""]).join(" | "));
   output.push(separator);
-  data.forEach(function(row) {
-    output.push([""].concat(columns.map(function(column) { return pad(row[column.field], column.width); })).concat([""]).join(" | "));
+  data.forEach(row => {
+    output.push([""].concat(columns.map(({field, width}) => pad(row[field], width))).concat([""]).join(" | "));
   });
   output.push(separator);
 
   if (options.skinny) {
-    output = output.map(function(e) {
-      return e.replace(/^[ -]/, "").replace(/[ -]$/, "");
-    });
+    output = output.map(e => e.replace(/^[ -]/, "").replace(/[ -]$/, ""));
   }
 
   return output.join("\n");
